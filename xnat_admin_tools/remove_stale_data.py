@@ -7,8 +7,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+app = typer.Typer()
 
-def main(days: int):
+
+@app.command()
+def remove_stale(days: int):
     typer.echo(f"Searching sessions older than {days} days")
     xnat_host = os.environ.get("XNAT_HOST", "")
     xnat_user = os.environ.get("XNAT_USER", "")
@@ -37,5 +40,5 @@ def main(days: int):
     connection.disconnect()
 
 
-if __name__ == "__main__":
-    typer.run(main)
+def main():
+    app()
