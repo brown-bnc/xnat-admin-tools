@@ -1,6 +1,6 @@
 name: pre-commit
 
-on: [pull-request]
+on: [push]
 
 jobs:
   pre-commit:
