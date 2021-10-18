@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "xnat-admin-tools"
+version = "0.1.0"
+description = "BNC tools to aid admin tasks of XNAT"
+authors = ["Isabel Restrepo <isabelrestre@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+typer = "^0.4.0"
+pyxnat = "^1.4"
+python-dotenv = "^0.19.0"
+
+[tool.poetry.dev-dependencies]
+pre-commit = "^2.15.0"
+
+[tool.poetry.scripts]
+xnat-cleanup ="xnat_admin_tools.remove_stale_data:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
