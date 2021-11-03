@@ -1,45 +1,55 @@
 import os
 
 import pyxnat
+import typer
 from dotenv import load_dotenv
-
-# from datetime import datetime, timedelta
-
 
 load_dotenv()
 
-if __name__ == "__main__":
+app = typer.Typer()
 
+
+@app.command()
+def create_new_projects(project_id: str):
     # I used export env variables as well as hard coding the fields
-    xnat_host = os.environ.get("XNAT_HOST", "")
-    xnat_user = os.environ.get("XNAT_USER", "")
-    xnat_pass = os.environ.get("XNAT_PASS", "")
-    connection = pyxnat.Interface(server=xnat_host, user=xnat_user, password=xnat_pass)
+    xrelay_host = os.environ.get("XNAT_RELAY_HOST", "")
+    xrelay_user = os.environ.get("XNAT_RELAY_USER", "")
+    xrelay_pass = os.environ.get("XNAT_RELAY_PASS", "")
+    xserver_host = os.environ.get("XNAT_SERVER_HOST", "")
+    xserver_user = os.environ.get("XNAT_SERVER_USER", "")
+    xserver_pass = os.environ.get("XNAT_SERVER_PASS", "")
+    xrelay_connection = pyxnat.Interface(
+        server=xrelay_host, user=xrelay_user, password=xrelay_pass
+    )
+    xserver_connection = pyxnat.Interface(
+        server=xserver_host, user=xserver_user, password=xserver_pass
+    )
 
-    # I tried listing the projects as they mention in documentation
-    projects = connection.select("/project").get()
-    # projects = connection.select.projects().get()
+    project_values = (
+        xrelay_connection.select(
+            "xnat:projectData",
+            [
+                "xnat:projectData/ID",
+                "xnat:projectData/NAME",
+                "xnat:projectData/DESCRIPTION",
+                "xnat:projectData/PI",
+            ],
+        )
+        .where([("xnat:projectData/ID", "=", project_id)])
+        .data
+    )
 
-    print(projects)  # I get an empty array here
+    for session in project_values:
+        print(project_values)
 
-    # Then I tried to reproduce your code from other file and it again crashes
+    # server_project = xserver_connection.select.project(project_idß)
 
-    # now = datetime.now()
-    # cutoff = now - timedelta(days=days)
-    # date_time = cutoff.strftime("%Y-%m-%d, %H:%M:%S")
-    # to_delete = (
-    #     connection.select(
-    #         "xnat:mrSessionData",
-    #         [
-    #             "xnat:mrSessionData/PROJECT",
-    #             "xnat:mrSessionData/SUBJECT_ID",
-    #             "xnat:mrSessionData/INSERT_DATE",
-    #         ],
-    #     )
-    #     .where([("xnat:mrSessionData/INSERT_DATE", "<", date_time)])
-    #     .data
-    # )
-    # for session in to_delete:
-    #     print(session)
+    # if not (server_project.exists()):
+    #     server_project.create(**project_values[0])
 
-    # connection.disconnect()
+    xrelay_connection.disconnect()
+    xserver_connection.disconnect()
+
+
+def main():
+    app()
