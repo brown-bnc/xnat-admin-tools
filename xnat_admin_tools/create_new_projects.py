@@ -39,10 +39,9 @@ def create_new_projects(project_id: str):
         .data
     )
 
-    for session in project_values:
-        print(project_values)
+    print(project_values[0])
 
-    # server_project = xserver_connection.select.project(project_idß)
+    # server_project = xserver_connection.select.project(project_id)
 
     # if not (server_project.exists()):
     #     server_project.create(**project_values[0])
