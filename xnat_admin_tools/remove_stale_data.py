@@ -39,9 +39,11 @@ def remove_stale(days: int):
     typer.echo(f"Found {len(to_delete)} sessions")
     for session in to_delete:
         typer.echo(f"Deleting {session}")
-        # p = connection.select.project(session["project"])
-        # p.subject(session["subject_id"]).delete()
-        # assert not p.subject(session["subject_id"]).exists(), "Participant data was not deleted"
+        p = connection.select.project(session["project"])
+        p.subject(session["subject_id"]).delete()
+        assert not p.subject(
+            session["subject_id"]
+        ).exists(), "Participant data was not deleted"
 
     connection.disconnect()
 
