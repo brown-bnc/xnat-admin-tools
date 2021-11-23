@@ -94,6 +94,8 @@ def create_new_projects(project_id: str):
         .data
     )
 
+    typer.echo("Found project with project details {}".format(project_values[0]))
+
     # The PI are added as project investigators
     # users contains is a list of PI + project investigatos of the project
     # The API returns a list of dict(zip("project_invs",
@@ -119,7 +121,7 @@ def create_new_projects(project_id: str):
         if not (server_project.exists()):
             server_project.create(**values_to_insert)
             typer.echo("Project {} created".format(project_id))
-
+            typer.echo("Project created with values {}".format(values_to_insert))
             # Add users as owners
             for user in users[0]["project_invs"].split("<br/>"):
                 try:
@@ -130,6 +132,7 @@ def create_new_projects(project_id: str):
                         "Could not find PI {} as a user on xnat server".format(user)
                     )
                     pass
+
         else:
             typer.echo("{} project already exists on server".format(project_id))
     except IndexError:
