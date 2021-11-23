@@ -10,6 +10,14 @@ app = typer.Typer()
 
 
 def get_user_details(connection: pyxnat.Interface):
+    """
+    Get the details for all users on the server
+    Input:
+        connection: Instantiated pyxnat.Interface class
+    Returns:
+        user_details: Dictionary with userid associated for all users on the server
+                      e.g. {"lastname, firstname": userid}
+    """
 
     users = connection.manage.users()
     users_details = {}
@@ -22,7 +30,14 @@ def get_user_details(connection: pyxnat.Interface):
 
 
 def remove_empty(values_to_select, project_values):
-
+    """
+    Remove empty fields, create request for fields to be inserted on server
+    Input:
+        values_to_select: list of all variables selected from relay
+        project_values: request returned by the relay (type: dictionary)
+    Output:
+        values_to_insert: request for values to be inserted on the server (type: dictionary)
+    """
     values_to_insert = {}
     for insert_tag, value in zip(values_to_select, list(project_values.values())):
         if value:
@@ -37,7 +52,12 @@ def remove_empty(values_to_select, project_values):
 
 @app.command()
 def create_new_projects(project_id: str):
-    # I used export env variables as well as hard coding the fields
+    """
+    Create a project on server with the same settings on relay
+
+    This funtion creates a project on xnat server with same settings on the relay
+    Investigators are added as users
+    """
 
     typer.echo("Creating project {} on XNAT server".format(project_id))
 
@@ -64,6 +84,7 @@ def create_new_projects(project_id: str):
         "xnat:projectData/DESCRIPTION",
     ]
 
+    # The API returns a list of dictionary elements of all values selected
     project_values = (
         xrelay_connection.select(
             "xnat:projectData",
@@ -73,6 +94,12 @@ def create_new_projects(project_id: str):
         .data
     )
 
+    # The PI are added as project investigators
+    # users contains is a list of PI + project investigatos of the project
+    # The API returns a list of dict(zip("project_invs",
+    #                                    "PI(lastname, firstname) <br/>
+    #                                     investigator 1(lastname, firstname) <br/>
+    #                                     investigator 2(lastname, firstname) ..."))
     users = (
         xrelay_connection.select(
             "xnat:projectData",
