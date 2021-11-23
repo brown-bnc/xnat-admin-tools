@@ -11,8 +11,7 @@ load_dotenv()
 app = typer.Typer()
 
 
-@app.command()
-def remove_stale(connection: pyxnat.Interface, days: int):
+def remove_stale(connection: pyxnat.Interface, days: int, dry_run: bool = False):
     """Removes participant data form an XNAT host that is older
     than the specified number of days"""
     typer.echo(f"Searching sessions older than {days} days")
@@ -37,15 +36,25 @@ def remove_stale(connection: pyxnat.Interface, days: int):
     for session in to_delete:
         typer.echo(f"Deleting {session}")
         p = connection.select.project(session["project"])
-        p.subject(session["subject_id"]).delete()
-        assert not p.subject(
-            session["subject_id"]
-        ).exists(), "Participant data was not deleted"
+        if not dry_run:
+            p.subject(session["subject_id"]).delete()
+            assert not p.subject(
+                session["subject_id"]
+            ).exists(), "Participant data was not deleted"
 
 
 @app.command()
 def enforce_disk_usage(
-    path: str, percent: int, min_days: int, max_days: int, step_days: int = -5
+    path: str,
+    percent: int,
+    min_days: int,
+    max_days: int,
+    step_days: int = typer.Option(
+        -5, help="Decrement for iteration when checking age of data"
+    ),
+    dry_run: bool = typer.Option(
+        False, help="Whether to actually delete or nor the data"
+    ),
 ):
     """Checks the percent usage of a location,
     then remove stale projects until target percent min_days is hit,
@@ -61,7 +70,7 @@ def enforce_disk_usage(
         disk_usage = psutil.disk_usage(path).percent
         typer.echo(f"Current disk usage for {path} is {disk_usage}")
         if disk_usage > percent:
-            remove_stale(connection, days)
+            remove_stale(connection, days, dry_run)
         else:
             break
 
