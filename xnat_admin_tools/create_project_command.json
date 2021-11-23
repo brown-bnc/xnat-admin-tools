@@ -1,0 +1,145 @@
+{
+    "name": "xnat-create-projects",
+    "label": "xnat-create-projects",
+    "description": "Runs xnat-admin-tools to create new projects",
+    "version": "1.5",
+    "schema-version": "1.0",
+    "image": "ghcr.io/brown-bnc/xnat-admin-tools:dev",
+    "type": "docker",
+    "command-line": "xnat-create-project #ID# > /output/#OUTFILE#",
+    "override-entrypoint": true,
+    "mounts": [
+      {
+        "name": "in",
+        "writable": false,
+        "path": "/input"
+      },
+      {
+        "name": "out",
+        "writable": true,
+        "path": "/output"
+      }
+    ],
+    "environment-variables": {
+      "XNAT_SERVER_PASS": "Add server password here",
+      "XNAT_RELAY_HOST": "Add relay address here",
+      "XNAT_RELAY_PASS": "Add relay pass here",
+      "XNAT_SERVER_USER": "Add server usernamer here",
+      "XNAT_RELAY_USER": "Add relay username here",
+      "XNAT_SERVER_HOST": "Add server address here"
+    },
+    "ports": {},
+    "inputs": [
+      {
+        "name": "project_id",
+        "label": null,
+        "description": "Project ID",
+        "type": "string",
+        "matcher": null,
+        "default-value": null,
+        "required": true,
+        "replacement-key": "#ID#",
+        "sensitive": null,
+        "command-line-flag": null,
+        "command-line-separator": null,
+        "true-value": null,
+        "false-value": null,
+        "select-values": [],
+        "multiple-delimiter": null
+      },
+      {
+        "name": "output-file",
+        "label": null,
+        "description": "Name of the file to collect stdout",
+        "type": "string",
+        "matcher": null,
+        "default-value": "out.txt",
+        "required": false,
+        "replacement-key": "#OUTFILE#",
+        "sensitive": null,
+        "command-line-flag": null,
+        "command-line-separator": null,
+        "true-value": null,
+        "false-value": null,
+        "select-values": [],
+        "multiple-delimiter": null
+      }
+    ],
+    "outputs": [
+      {
+        "name": "output",
+        "description": "The command's stdout",
+        "required": true,
+        "mount": "out",
+        "path": null,
+        "glob": null
+      }
+    ],
+    "xnat": [
+      {
+        "name": "xnat-admin-tools-project",
+        "label": "xnat-admin-tools",
+        "description": "Run the xnat-create-projects with project mounted",
+        "contexts": [
+          "xnat:projectData"
+        ],
+        "external-inputs": [
+          {
+            "name": "project",
+            "label": null,
+            "description": "Input project",
+            "type": "Project",
+            "matcher": null,
+            "default-value": null,
+            "required": true,
+            "replacement-key": null,
+            "sensitive": null,
+            "provides-value-for-command-input": null,
+            "provides-files-for-command-mount": "in",
+            "via-setup-command": null,
+            "user-settable": null,
+            "load-children": false
+          }
+        ],
+        "derived-inputs": [
+          {
+            "name": "get_project_id",
+            "label": null,
+            "description": "Get project ID with project mounted",
+            "type": "string",
+            "matcher": null,
+            "default-value": null,
+            "required": true,
+            "replacement-key": null,
+            "sensitive": null,
+            "provides-value-for-command-input": "project_id",
+            "provides-files-for-command-mount": null,
+            "user-settable": false,
+            "load-children": true,
+            "derived-from-wrapper-input": "project",
+            "derived-from-xnat-object-property": "id",
+            "via-setup-command": null,
+            "multiple": false,
+            "parser": null
+          }
+        ],
+        "output-handlers": [
+          {
+            "name": "output-resource",
+            "accepts-command-output": "output",
+            "via-wrapup-command": null,
+            "as-a-child-of": "project",
+            "type": "Resource",
+            "label": "DEBUG_OUTPUT",
+            "format": null,
+            "description": null,
+            "content": null,
+            "tags": []
+          }
+        ]
+      }
+    ],
+    "container-labels": {},
+    "generic-resources": {},
+    "ulimits": {}
+  }
