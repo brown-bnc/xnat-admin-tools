@@ -113,6 +113,15 @@ def create_new_projects(project_id: str):
 
     user_details = get_user_details(xserver_connection)
 
+    accessibility = (
+        xrelay_connection.select(
+            "xnat:projectData",
+            ["xnat:projectData/PROJECT_ACCESS"],
+        )
+        .where([("xnat:projectData/ID", "=", project_id)])
+        .data
+    )
+
     try:
         values_to_insert = remove_empty(values_to_select, project_values[0])
         typer.echo("Creating project on server")
@@ -122,6 +131,9 @@ def create_new_projects(project_id: str):
             server_project.create(**values_to_insert)
             typer.echo("Project {} created".format(project_id))
             typer.echo("Project created with values {}".format(values_to_insert))
+            server_project.set_accessibility(
+                accessibility=accessibility[0]["project_access"]
+            )
             # Add users as owners
             for user in users[0]["project_invs"].split("<br/>"):
                 try:
