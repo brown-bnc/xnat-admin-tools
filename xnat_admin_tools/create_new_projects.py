@@ -50,6 +50,96 @@ def remove_empty(values_to_select, project_values):
     return values_to_insert
 
 
+def set_xsync_credentials(
+    xrelay_host: str,
+    xrelay_user: str,
+    xrelay_pass: str,
+    xserver_host: str,
+    xserver_user: str,
+    xserver_pass: str,
+    project_id: str,
+):
+    """
+    Sets remote server credentials for Xsync service on the relay
+
+    If this step fails please set credentials manually
+    """
+    import json
+
+    import requests
+    from requests.auth import HTTPBasicAuth
+
+    basic = HTTPBasicAuth(xrelay_user, xrelay_pass)
+    payload = {
+        "username": xserver_user,
+        "secret": xserver_pass,
+        "host": xserver_host,
+        "alias": xserver_user,
+        "localProject": project_id,
+        "remoteProject": project_id,
+    }
+
+    post_url = xrelay_host + "/xapi/xsync/credentials/save/projects/" + project_id
+    # print(post_url)
+    response = requests.request(
+        "POST",
+        post_url,
+        headers={"Content-Type": "text/plain"},
+        data=json.dumps(payload),
+        auth=basic,
+    )
+
+    return response
+
+
+def set_project_settings(
+    xrelay_host: str,
+    xrelay_user: str,
+    xrelay_pass: str,
+    xserver_host: str,
+    project_id: str,
+):
+    """
+    Sets project settings for the project on the relay
+
+    If this step fails please set the project settings manually
+    """
+    import json
+
+    import requests
+    from requests.auth import HTTPBasicAuth
+
+    basic = HTTPBasicAuth(xrelay_user, xrelay_pass)
+    payload = {
+        "project_resources": {"sync_type": "none"},
+        "subject_resources": {"sync_type": "none"},
+        "subject_assessors": {"sync_type": "none"},
+        "imaging_sessions": {"sync_type": "all"},
+        "enabled": True,
+        "source_project_id": project_id,
+        "sync_frequency": "on demand",
+        "sync_new_only": True,
+        "identifiers": "use_local",
+        "remote_url": xserver_host,
+        "remote_project_id": project_id,
+        "notification_emails": "",
+        "customIdentifiers": "dateTimeLabelGenerator",
+        "anonymize": False,
+        "no_of_retry_days": 3,
+    }
+
+    post_url = xrelay_host + "/xapi/xsync/setup/projects/" + project_id
+    response = requests.request(
+        "POST",
+        post_url,
+        headers={"Content-Type": "text/plain"},
+        data=json.dumps(payload),
+        auth=basic,
+    )
+
+    return response
+
+
 @app.command()
 def create_new_projects(project_id: str):
     """
@@ -113,6 +203,15 @@ def create_new_projects(project_id: str):
 
     user_details = get_user_details(xserver_connection)
 
+    accessibility = (
+        xrelay_connection.select(
+            "xnat:projectData",
+            ["xnat:projectData/PROJECT_ACCESS"],
+        )
+        .where([("xnat:projectData/ID", "=", project_id)])
+        .data
+    )
+
     try:
         values_to_insert = remove_empty(values_to_select, project_values[0])
         typer.echo("Creating project on server")
@@ -122,6 +221,9 @@ def create_new_projects(project_id: str):
             server_project.create(**values_to_insert)
             typer.echo("Project {} created".format(project_id))
             typer.echo("Project created with values {}".format(values_to_insert))
+            server_project.set_accessibility(
+                accessibility=accessibility[0]["project_access"]
+            )
             # Add users as owners
             for user in users[0]["project_invs"].split("<br/>"):
                 try:
@@ -132,6 +234,43 @@ def create_new_projects(project_id: str):
                         "Could not find PI {} as a user on xnat server".format(user)
                     )
                     pass
+
+            # Xsync settings
+            # set up Xsync remote credentials
+            response = set_xsync_credentials(
+                xrelay_host,
+                xrelay_user,
+                xrelay_pass,
+                xserver_host,
+                xserver_user,
+                xserver_pass,
+                project_id,
+            )
+
+            if response.status_code == 200:
+                typer.echo(response.text)
+            else:
+                typer.echo(
+                    """Project credentials for {} could not be set.
+                     Please manually set the credentials""".format(
+                        project_id
+                    )
+                )
+
+            # set up Xsync project credentials
+            response = set_project_settings(
+                xrelay_host, xrelay_user, xrelay_pass, xserver_host, project_id
+            )
+
+            if response.status_code == 200:
+                typer.echo(response.text)
+            else:
+                typer.echo(
+                    """Project settings for {} could not be set.
+                     Please manually set the credentials""".format(
+                        project_id
+                    )
+                )
 
         else:
             typer.echo("{} project already exists on server".format(project_id))
