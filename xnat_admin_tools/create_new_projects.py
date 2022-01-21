@@ -69,19 +69,38 @@ def set_xsync_credentials(
     import requests
     from requests.auth import HTTPBasicAuth
 
+    # get token from xnat remote server
+    basic = HTTPBasicAuth(xserver_user, xserver_pass)
+    get_url = xserver_host + "/data/services/tokens/issue"
+    R = requests.request(
+        "GET",
+        get_url,
+        headers={"Content-Type": "application/json"},
+        auth=basic,
+    )
+    response = R.json()
+
+    alias, secret, expiration = (
+        response["alias"],
+        response["secret"],
+        response["estimatedExpirationTime"],
+    )
+
+    # make the post call to xsync on relay
     basic = HTTPBasicAuth(xrelay_user, xrelay_pass)
     payload = {
         "username": xserver_user,
-        "secret": xserver_pass,
+        "secret": secret,
         "host": xserver_host,
-        "alias": xserver_user,
+        "alias": alias,
         "localProject": project_id,
         "remoteProject": project_id,
+        "estimatedExpirationTime": expiration,
     }
 
     post_url = xrelay_host + "/xapi/xsync/credentials/save/projects/" + project_id
     # print(post_url)
-    response = requests.request(
+    R = requests.request(
         "POST",
         post_url,
         headers={"Content-Type": "text/plain"},
@@ -89,7 +108,7 @@ def set_xsync_credentials(
         auth=basic,
     )
 
-    return response
+    return R
 
 
 def set_project_settings(
@@ -129,7 +148,7 @@ def set_project_settings(
     }
 
     post_url = xrelay_host + "/xapi/xsync/setup/projects/" + project_id
-    response = requests.request(
+    R = requests.request(
         "POST",
         post_url,
         headers={"Content-Type": "text/plain"},
@@ -137,7 +156,7 @@ def set_project_settings(
         auth=basic,
     )
 
-    return response
+    return R
 
 
 @app.command()
@@ -252,7 +271,7 @@ def create_new_projects(project_id: str):
             else:
                 typer.echo(
                     """Project credentials for {} could not be set.
-                     Please manually set the credentials""".format(
+                        Please manually set the credentials""".format(
                         project_id
                     )
                 )
@@ -267,7 +286,7 @@ def create_new_projects(project_id: str):
             else:
                 typer.echo(
                     """Project settings for {} could not be set.
-                     Please manually set the credentials""".format(
+                        Please manually set the credentials""".format(
                         project_id
                     )
                 )
