@@ -17,6 +17,6 @@ repos:
       rev: "v0.910"
       hooks:
         - id: mypy
-          additional_dependencies: [types-requests]
+          additional_dependencies: [types-requests, types-redis]
 default_language_version:
     python: python3
