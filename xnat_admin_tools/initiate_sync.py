@@ -70,7 +70,7 @@ def sync_project(experiment_id, label_id):
         2) If the respose code == 423 the method is requeued
         3) skip sync if the project was already synced
     """
-    from time import time
+    import time
 
     import requests
     from requests.auth import HTTPBasicAuth
