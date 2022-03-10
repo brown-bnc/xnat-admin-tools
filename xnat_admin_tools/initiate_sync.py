@@ -80,10 +80,13 @@ def sync_project(experiment_id, label_id):
     xrelay_pass = os.environ.get("XNAT_RELAY_PASS", "")
 
     if check_status(label_id):
+        # Sleep till data is available for transfer
+        # This container can get prematurely for large datasets
+        # If we see file lock errors we might need to increase this
+        # waitime
         time.sleep(300)
         post_url = xrelay_host + "/xapi/xsync/syncexperiment/" + experiment_id
         basic = HTTPBasicAuth(xrelay_user, xrelay_pass)
-        # post_url = xrelay_host + "/data/services/tokens/issue" + experiment_id
         response = requests.request(
             "POST",
             post_url,

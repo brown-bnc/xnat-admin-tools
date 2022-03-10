@@ -127,4 +127,3 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-xnat_admin_tools/get_result.py
