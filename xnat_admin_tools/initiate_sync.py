@@ -95,8 +95,8 @@ def sync_project(experiment_id, label_id):
         )
 
         if response.status_code == 423:
-            enqueue_sync(experiment_id)
-            return "xsync servers LOCKED"
+            enqueue_sync(experiment_id, label_id)
+            return "xsync servers LOCKED: status code {}".format(response.status_code)
         elif response.status_code == 200:
             return "xsync on {} started".format(experiment_id)
         else:
@@ -112,7 +112,7 @@ def enqueue_sync(experiment_id, label_id):
 
     redis_queue = get_redis_queue()
     job = redis_queue.enqueue(
-        sync_project, args=(experiment_id, label_id), job_timeout=600
+        sync_project, args=(experiment_id, label_id), job_timeout=600, results_ttl=-1
     )
 
     typer.echo("Job started - JOB_ID: {}".format(job.id))
