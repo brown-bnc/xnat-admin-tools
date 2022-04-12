@@ -112,7 +112,7 @@ def enqueue_sync(experiment_id, label_id):
 
     redis_queue = get_redis_queue()
     job = redis_queue.enqueue(
-        sync_project, args=(experiment_id, label_id), job_timeout=600, results_ttl=-1
+        sync_project, args=(experiment_id, label_id), job_timeout=600, result_ttl=604800
     )
 
     typer.echo("Job started - JOB_ID: {}".format(job.id))
