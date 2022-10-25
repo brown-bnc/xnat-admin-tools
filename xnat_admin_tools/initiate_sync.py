@@ -24,43 +24,6 @@ def get_redis_queue():
     return Queue(connection=redis_conn)
 
 
-def check_status(label_id):
-    """
-    Check if the project was alraedy synced previously
-    """
-    from psycopg2 import connect
-
-    status_whitelist = ["SYNCED_AND_VERIFIED", "SYNCED_AND_NOT_VERIFIED", "SKIPPED"]
-
-    conn = connect(
-        host=os.getenv("POSTGRES_HOST", "127.0.0.1"),
-        database="xnat",
-        user=os.getenv("POSTGRES_USER", ""),
-        password=os.getenv("POSTGRES_PASS", ""),
-    )
-    cur = conn.cursor()
-    cur.execute(
-        """
-        SELECT sync_status
-        FROM (
-            SELECT created, sync_status
-            FROM xhbm_xsync_experiment_history
-            WHERE local_label = '{}'
-            ORDER BY created DESC
-            FETCH FIRST 1 ROWS ONLY) as sub
-        ;
-    """.format(
-            label_id
-        )
-    )
-
-    if cur.rowcount == 1:
-        result = cur.fetchone()
-        return result[0] not in status_whitelist
-
-    return True
-
-
 def sync_project(experiment_id, label_id):
     """
     Basic method to initiated sync
@@ -79,32 +42,29 @@ def sync_project(experiment_id, label_id):
     xrelay_user = os.environ.get("XNAT_RELAY_USER", "")
     xrelay_pass = os.environ.get("XNAT_RELAY_PASS", "")
 
-    if check_status(label_id):
-        # Sleep till data is available for transfer
-        # This container can get prematurely for large datasets
-        # If we see file lock errors we might need to increase this
-        # waitime
-        time.sleep(300)
-        post_url = xrelay_host + "/xapi/xsync/syncexperiment/" + experiment_id
-        basic = HTTPBasicAuth(xrelay_user, xrelay_pass)
-        response = requests.request(
-            "POST",
-            post_url,
-            headers={"Content-Type": "application/json"},
-            auth=basic,
-        )
+    # Sleep till data is available for transfer
+    # This container can get prematurely for large datasets
+    # If we see file lock errors we might need to increase this
+    # waitime
+    time.sleep(300)
+    post_url = xrelay_host + "/xapi/xsync/syncexperiment/" + experiment_id
+    basic = HTTPBasicAuth(xrelay_user, xrelay_pass)
+    response = requests.request(
+        "POST",
+        post_url,
+        headers={"Content-Type": "application/json"},
+        auth=basic,
+    )
 
-        if response.status_code == 423:
-            enqueue_sync(experiment_id, label_id)
-            return "xsync servers LOCKED: status code {}".format(response.status_code)
-        elif response.status_code == 200:
-            return "xsync on {} started".format(experiment_id)
-        else:
-            return "xsync could not be completed. Status code : {}".format(
-                response.status_code
-            )
+    if response.status_code == 423:
+        enqueue_sync(experiment_id, label_id)
+        return "xsync servers LOCKED: status code {}".format(response.status_code)
+    elif response.status_code == 200:
+        return "xsync on {} started".format(experiment_id)
     else:
-        return "Session was already synced previously"
+        return "xsync could not be completed. Status code : {}".format(
+            response.status_code
+        )
 
 
 @app.command()
