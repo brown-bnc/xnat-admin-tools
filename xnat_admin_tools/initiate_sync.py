@@ -24,43 +24,6 @@ def get_redis_queue():
     return Queue(connection=redis_conn)
 
 
-def check_status(label_id):
-    """
-    Check if the project was alraedy synced previously
-    """
-    from psycopg2 import connect
-
-    status_whitelist = ["SYNCED_AND_VERIFIED", "SYNCED_AND_NOT_VERIFIED", "SKIPPED"]
-
-    conn = connect(
-        host=os.getenv("POSTGRES_HOST", "127.0.0.1"),
-        database="xnat",
-        user=os.getenv("POSTGRES_USER", ""),
-        password=os.getenv("POSTGRES_PASS", ""),
-    )
-    cur = conn.cursor()
-    cur.execute(
-        """
-        SELECT sync_status
-        FROM (
-            SELECT created, sync_status
-            FROM xhbm_xsync_experiment_history
-            WHERE local_label = '{}'
-            ORDER BY created DESC
-            FETCH FIRST 1 ROWS ONLY) as sub
-        ;
-    """.format(
-            label_id
-        )
-    )
-
-    if cur.rowcount == 1:
-        result = cur.fetchone()
-        return result[0] not in status_whitelist
-
-    return True
-
-
 def sync_project(experiment_id, label_id):
     """
     Basic method to initiated sync
