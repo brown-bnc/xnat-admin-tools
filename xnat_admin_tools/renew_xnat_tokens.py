@@ -1,6 +1,6 @@
 import requests
-from requests.auth import HTTPBasicAuth
 import typer
+from requests.auth import HTTPBasicAuth
 from xnat_admin_tools.create_new_projects import set_xsync_credentials
 
 app = typer.Typer()
