@@ -30,7 +30,8 @@ def renew_xnat_tokens(
     projects = fetch_all_projects(xserver_host, xserver_user, xserver_pass)
 
     for project in projects['ResultSet']['Result']:
-        project_id = project['ID']
+        
+        project_id = project['ID'] 
         set_xsync_credentials(
             xrelay_host, 
             xrelay_user,
