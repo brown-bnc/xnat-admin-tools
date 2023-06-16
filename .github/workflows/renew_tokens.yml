@@ -1,0 +1,31 @@
+name: Renew XNAT Tokens
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run_renew_xnat_tokens:
+    name: Run renew_xnat_tokens Python Script
+    runs-on: ubuntu-latest
+
+    inputs:
+      arguments:
+        xrelay_host: "https://xrelay.bnc.brown.edu"
+        xrelay_user: ${{ secrets.XNAT_RELAY_USER }}
+        xrelay_pass: ${{ secrets.XNAT_RELAY_PASS }}
+        xserver_host: "https://xnat.bnc.brown.edu"
+        xserver_user: ${{ secrets.XNAT_SERVER_USER }}
+        xserver_pass: ${{ secrets.XNAT_SERVER_PASS }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          path: "./"
+
+      - name: Build Docker image
+        run: docker build -t xnat-admin-tools .
+
+      - name: Run Python script inside Docker container
+        run: |
+          docker run xnat-admin-tools python /xnat-admin-tools/renew_xnat_tokens.py ${{ inputs.arguments }}
