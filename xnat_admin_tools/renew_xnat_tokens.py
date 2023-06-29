@@ -45,5 +45,6 @@ def renew_xnat_tokens(
         )
 
 
-if __name__ == "__main__":
+def main():
     app()
+
