@@ -29,8 +29,9 @@ jobs:
 
     steps: 
       - name: Run renew_xnat_tokens  
-        run: 
+        run: |
           ls -lrt
+          cd /xnat_admin_tools
           renew_xnat_tokens  \
                 "$XRELAY_HOST" \
                 "$XRELAY_USER" \
