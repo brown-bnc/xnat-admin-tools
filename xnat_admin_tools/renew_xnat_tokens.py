@@ -47,4 +47,3 @@ def renew_xnat_tokens(
 
 def main():
     app()
-
