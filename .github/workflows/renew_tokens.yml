@@ -7,26 +7,18 @@ on:
           description: 'XNAT Relay Hostname'
           required: true
           default: "https://xrelay.bnc.brown.edu"
-        xrelay_user:
-          description: 'XNAT Relay Username'
-          required: true
-          default: ${{ secrets.XNAT_RELAY_USER }}
-        xrelay_pass: 
-          description: 'XNAT Relay Password'
-          required: true
-          default: ${{ secrets.XNAT_RELAY_PASS }}
         xserver_host: 
           description: 'XNAT Server Hostname'
           required: true
           default: "https://xnat.bnc.brown.edu"
-        xserver_user:
-          description: 'XNAT Server Username'
-          required: true
-          default: ${{ secrets.XNAT_SERVER_USER }}
-        xserver_pass:
-          description: 'XNAT Server Password'
-          required: true
-          default:  ${{ secrets.XNAT_SERVER_PASS }}
+          
+env:
+  XRELAY_HOST: ${{ github.event.inputs.xrelay_host }}
+  XRELAY_USER: ${{ secrets.XNAT_RELAY_USER }}
+  XRELAY_PASS: ${{ secrets.XNAT_RELAY_PASS }}
+  XSERVER_HOST: ${{ github.event.inputs.xserver_host }}
+  XSERVER_USER: ${{ secrets.XNAT_SERVER_USER }}
+  XSERVER_PASS: ${{ secrets.XNAT_SERVER_PASS }}
 
 jobs:
   renew_tokens:
@@ -39,9 +31,9 @@ jobs:
       - name: Run renew_xnat_tokens  
         run: 
               renew_xnat_tokens \
-                "${{ inputs.xrelay_host }}" \
-                "${{ inputs.xrelay_user }}" \
-                "${{ inputs.xrelay_pass }}" \
-                "${{ inputs.xserver_host }}" \
-                "${{ inputs.xserver_user }}" \
-                "${{ inputs.xserver_pass }}"
+                "$XRELAY_HOST" \
+                "$XRELAY_USER" \
+                "$XRELAY_PASS" \
+                "$XSERVER_HOST" \
+                "$XSERVER_USER" \
+                "$XSERVER_PASS"
