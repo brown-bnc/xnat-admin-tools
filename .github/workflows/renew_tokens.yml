@@ -25,7 +25,7 @@ jobs:
     name: Run renew_xnat_tokens Python Script
     runs-on: self-hosted
     container:
-      image: ghcr.io/xnat-admin-tools:latest
+      image: ghcr.io/brown-bnc/xnat-admin-tools:latest
 
     steps: 
       - name: Run renew_xnat_tokens  
