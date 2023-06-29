@@ -11,6 +11,10 @@ on:
           description: 'XNAT Server Hostname'
           required: true
           default: "https://xnat.bnc.brown.edu"
+        image_tag:
+          description: "XNAT Admin Tools Container Tag"
+          required: true
+          default: "latest"
           
 env:
   XRELAY_HOST: ${{ github.event.inputs.xrelay_host }}
@@ -25,7 +29,7 @@ jobs:
     name: Run renew_xnat_tokens Python Script
     runs-on: self-hosted
     container:
-      image: ghcr.io/brown-bnc/xnat-admin-tools:latest
+      image: ghcr.io/brown-bnc/xnat-admin-tools::${{ github.event.inputs.image_tag }}
 
     steps: 
       - name: Run renew_xnat_tokens  
