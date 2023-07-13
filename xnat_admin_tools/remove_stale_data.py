@@ -37,10 +37,12 @@ def remove_stale(connection: pyxnat.Interface, days: int, dry_run: bool = False)
         typer.echo(f"Deleting {session}")
         p = connection.select.project(session["project"])
         if not dry_run:
-            p.subject(session["subject_id"]).delete()
-            assert not p.subject(
-                session["subject_id"]
-            ).exists(), "Participant data was not deleted"
+            try:
+                p.subject(session["subject_id"]).delete()
+            except Exception as e:
+                typer.echo(
+                    f"Error {e}: Unable to delete session {session} from archive."
+                )
 
 
 @app.command()
