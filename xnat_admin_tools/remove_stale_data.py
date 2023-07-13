@@ -40,7 +40,9 @@ def remove_stale(connection: pyxnat.Interface, days: int, dry_run: bool = False)
             try:
                 p.subject(session["subject_id"]).delete()
             except Exception as e:
-                typer.echo(f"Error {e}: Unable to delete session {session} from archive.")
+                typer.echo(
+                    f"Error {e}: Unable to delete session {session} from archive."
+                )
 
 
 @app.command()
