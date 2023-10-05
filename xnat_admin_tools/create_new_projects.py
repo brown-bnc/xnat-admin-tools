@@ -86,6 +86,18 @@ def set_xsync_credentials(
         response["estimatedExpirationTime"],
     )
 
+    get_url = xserver_host + f"/data/projects/{project_id}/config/xsync"
+    R = requests.request(
+        "GET",
+        get_url,
+        headers={"Content-Type": "application/json"},
+        auth=basic,
+    )
+    response = R.json()
+
+    xsync_config = response["ResultSet"]["Result"][0]["contents"]
+    content_dict = json.loads(xsync_config)
+    remote_project_id = content_dict["remote_project_id"]
     # make the post call to xsync on relay
     basic = HTTPBasicAuth(xrelay_user, xrelay_pass)
     payload = {
@@ -94,7 +106,7 @@ def set_xsync_credentials(
         "host": xserver_host,
         "alias": alias,
         "localProject": project_id,
-        "remoteProject": project_id,
+        "remoteProject": remote_project_id,
         "estimatedExpirationTime": expiration,
     }
 
