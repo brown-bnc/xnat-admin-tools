@@ -93,7 +93,7 @@ def set_xsync_credentials(
         headers={"Content-Type": "application/json"},
         auth=basic,
     )
-    
+
     if R.status_code == 200:
         try:
             print(response)
