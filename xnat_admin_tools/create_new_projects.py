@@ -94,8 +94,6 @@ def set_xsync_credentials(
         auth=basic,
     )
 
-    print("Response ", R)
-    print("get url", get_url)
     response = R.json()
 
     xsync_config = response["ResultSet"]["Result"][0]["contents"]
