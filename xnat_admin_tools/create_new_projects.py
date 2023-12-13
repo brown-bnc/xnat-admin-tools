@@ -86,7 +86,7 @@ def set_xsync_credentials(
         response["estimatedExpirationTime"],
     )
 
-    get_url = xserver_host + f"/data/projects/{project_id}/config/xsync"
+    get_url = xrelay_host + f"/data/projects/{project_id}/config/xsync"
     R = requests.request(
         "GET",
         get_url,
@@ -94,7 +94,10 @@ def set_xsync_credentials(
         auth=basic,
     )
 
+    print("Response ", R)
+    print("get url", get_url)
     response = R.json()
+
 
     xsync_config = response["ResultSet"]["Result"][0]["contents"]
     content_dict = json.loads(xsync_config)
