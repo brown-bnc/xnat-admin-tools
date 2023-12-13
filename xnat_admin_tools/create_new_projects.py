@@ -98,7 +98,6 @@ def set_xsync_credentials(
     print("get url", get_url)
     response = R.json()
 
-
     xsync_config = response["ResultSet"]["Result"][0]["contents"]
     content_dict = json.loads(xsync_config)
     remote_project_id = content_dict["remote_project_id"]
