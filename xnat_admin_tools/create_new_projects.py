@@ -94,25 +94,40 @@ def set_xsync_credentials(
         auth=basic,
     )
 
-    response = R.json()
+    # Project has XSync Configuration. Fetch Remote Project ID for Payload
+    if R.status_code == 200:
+        response = R.json()
+        xsync_config = response["ResultSet"]["Result"][0]["contents"]
+        content_dict = json.loads(xsync_config)
+        remote_project_id = content_dict["remote_project_id"]
 
-    xsync_config = response["ResultSet"]["Result"][0]["contents"]
-    content_dict = json.loads(xsync_config)
-    remote_project_id = content_dict["remote_project_id"]
-    # make the post call to xsync on relay
-    basic = HTTPBasicAuth(xrelay_user, xrelay_pass)
-    payload = {
-        "username": xserver_user,
-        "secret": secret,
-        "host": xserver_host,
-        "alias": alias,
-        "localProject": project_id,
-        "remoteProject": remote_project_id,
-        "estimatedExpirationTime": expiration,
-    }
+        # make the post call to xsync on relay
+        basic = HTTPBasicAuth(xrelay_user, xrelay_pass)
+        payload = {
+            "username": xserver_user,
+            "secret": secret,
+            "host": xserver_host,
+            "alias": alias,
+            "localProject": project_id,
+            "remoteProject": remote_project_id,
+            "estimatedExpirationTime": expiration,
+        }
+    # Project has no XSync Configuration. New Project. Use Project ID for Remote Project for Payload
+    else:
+        # make the post call to xsync on relay
+        basic = HTTPBasicAuth(xrelay_user, xrelay_pass)
+        payload = {
+            "username": xserver_user,
+            "secret": secret,
+            "host": xserver_host,
+            "alias": alias,
+            "localProject": project_id,
+            "remoteProject": project_id,
+            "estimatedExpirationTime": expiration,
+        }
 
     post_url = xrelay_host + "/xapi/xsync/credentials/save/projects/" + project_id
-    # print(post_url)
+
     R = requests.request(
         "POST",
         post_url,
