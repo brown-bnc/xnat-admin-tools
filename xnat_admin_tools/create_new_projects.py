@@ -94,15 +94,7 @@ def set_xsync_credentials(
         auth=basic,
     )
 
-    if R.status_code == 200:
-        try:
-            print(response)
-            response = R.json()
-            # Process your JSON data here
-        except ValueError:
-            print("Invalid JSON")
-    else:
-        print("Error:", R.status_code, R.text)
+    response = R.json()
 
     xsync_config = response["ResultSet"]["Result"][0]["contents"]
     content_dict = json.loads(xsync_config)
