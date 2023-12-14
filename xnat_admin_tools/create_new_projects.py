@@ -86,18 +86,20 @@ def set_xsync_credentials(
         response["estimatedExpirationTime"],
     )
 
-    get_url = xserver_host + f"/data/projects/{project_id}/config/xsync"
+    get_url = xrelay_host + f"/data/projects/{project_id}/config/xsync"
     R = requests.request(
         "GET",
         get_url,
         headers={"Content-Type": "application/json"},
         auth=basic,
     )
+
     response = R.json()
 
     xsync_config = response["ResultSet"]["Result"][0]["contents"]
     content_dict = json.loads(xsync_config)
     remote_project_id = content_dict["remote_project_id"]
+
     # make the post call to xsync on relay
     basic = HTTPBasicAuth(xrelay_user, xrelay_pass)
     payload = {
@@ -111,7 +113,7 @@ def set_xsync_credentials(
     }
 
     post_url = xrelay_host + "/xapi/xsync/credentials/save/projects/" + project_id
-    # print(post_url)
+
     R = requests.request(
         "POST",
         post_url,
@@ -266,6 +268,21 @@ def create_new_projects(project_id: str):
                     )
                     pass
 
+            # set up Xsync project credentials
+            response = set_project_settings(
+                xrelay_host, xrelay_user, xrelay_pass, xserver_host, project_id
+            )
+
+            if response.status_code == 200:
+                typer.echo(response.text)
+            else:
+                typer.echo(
+                    """Project settings for {} could not be set.
+                        Please manually set the credentials""".format(
+                        project_id
+                    )
+                )
+
             # Xsync settings
             # set up Xsync remote credentials
             response = set_xsync_credentials(
@@ -283,21 +300,6 @@ def create_new_projects(project_id: str):
             else:
                 typer.echo(
                     """Project credentials for {} could not be set.
-                        Please manually set the credentials""".format(
-                        project_id
-                    )
-                )
-
-            # set up Xsync project credentials
-            response = set_project_settings(
-                xrelay_host, xrelay_user, xrelay_pass, xserver_host, project_id
-            )
-
-            if response.status_code == 200:
-                typer.echo(response.text)
-            else:
-                typer.echo(
-                    """Project settings for {} could not be set.
                         Please manually set the credentials""".format(
                         project_id
                     )
