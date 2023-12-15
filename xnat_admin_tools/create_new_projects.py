@@ -96,7 +96,8 @@ def set_xsync_credentials(
 
     response = R.json()
 
-    xsync_config = response["ResultSet"]["Result"][0]["contents"]
+    # XNAT stores prior version of XSync configs. Fetching the latest (-1 index).
+    xsync_config = response["ResultSet"]["Result"][-1]["contents"]
     content_dict = json.loads(xsync_config)
     remote_project_id = content_dict["remote_project_id"]
 
