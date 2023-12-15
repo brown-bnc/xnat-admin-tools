@@ -101,6 +101,8 @@ def set_xsync_credentials(
     content_dict = json.loads(xsync_config)
     remote_project_id = content_dict["remote_project_id"]
 
+    print("Remote Project ID: ", remote_project_id)
+
     # make the post call to xsync on relay
     basic = HTTPBasicAuth(xrelay_user, xrelay_pass)
     payload = {
