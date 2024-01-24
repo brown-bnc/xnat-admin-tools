@@ -24,6 +24,7 @@ xnat-create-project ="xnat_admin_tools.create_new_projects:main"
 xnat-renew-xnat-tokens ="xnat_admin_tools.renew_xnat_tokens:main"
 xnat-sync-project ="xnat_admin_tools.initiate_sync:main"
 xnat-sync-get-results ="xnat_admin_tools.get_result:main"
+xnat-replicate-projects ="xnat_admin_tools.replicate_projects:main"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
