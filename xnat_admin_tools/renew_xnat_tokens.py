@@ -1,5 +1,6 @@
 import typer
-from xnat_admin_tools.utils.common import set_xsync_credentials, fetch_all_projects
+
+from xnat_admin_tools.utils.common import fetch_all_projects, set_xsync_credentials
 
 app = typer.Typer()
 

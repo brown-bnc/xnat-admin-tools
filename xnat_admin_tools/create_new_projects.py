@@ -1,13 +1,19 @@
 import os
+
 import pyxnat
 import typer
 from dotenv import load_dotenv
-from xnat_admin_tools.utils.common import create_new_project, set_project_settings, set_xsync_credentials, add_users_as_owners
+
+from xnat_admin_tools.utils.common import (
+    add_users_as_owners,
+    create_new_project,
+    set_project_settings,
+    set_xsync_credentials,
+)
 
 load_dotenv()
 
 app = typer.Typer()
-
 
 
 @app.command()
@@ -28,18 +34,21 @@ def create_new_projects(project_id: str):
     xserver_user = os.environ.get("XNAT_SERVER_USER", "")
     xserver_pass = os.environ.get("XNAT_SERVER_PASS", "")
 
-    
     # Establish connections to source and destination XNAT instances
-    source_connection = pyxnat.Interface(server=xrelay_host, user=xrelay_user, password=xrelay_pass)
-    dest_connection = pyxnat.Interface(server=xserver_host, user=xserver_user, password=xserver_pass)
+    source_connection = pyxnat.Interface(
+        server=xrelay_host, user=xrelay_user, password=xrelay_pass
+    )
+    dest_connection = pyxnat.Interface(
+        server=xserver_host, user=xserver_user, password=xserver_pass
+    )
 
     project = create_new_project(
-        project_id, 
-        xrelay_host, 
-        xrelay_user, 
-        xrelay_pass, 
-        xserver_host, 
-        xserver_user, 
+        project_id,
+        xrelay_host,
+        xrelay_user,
+        xrelay_pass,
+        xserver_host,
+        xserver_user,
         xserver_pass,
         source_connection,
         dest_connection,
@@ -47,9 +56,8 @@ def create_new_projects(project_id: str):
 
     add_users_as_owners(project, project_id, source_connection, dest_connection)
 
-
     # set up Xsync project credentials
-    response = set_project_settings( 
+    response = set_project_settings(
         xrelay_host,
         xrelay_user,
         xrelay_pass,
@@ -91,6 +99,7 @@ def create_new_projects(project_id: str):
 
     source_connection.disconnect()
     dest_connection.disconnect()
+
 
 def main():
     app()

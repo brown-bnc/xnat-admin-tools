@@ -1,6 +1,5 @@
-from typing import Any
-import requests
 import pyxnat
+import requests
 import typer
 from requests.auth import HTTPBasicAuth
 
@@ -17,9 +16,9 @@ def add_users_as_owners(project, project_id, src_conn, dst_conn):
     # The PI are added as project investigators
     # users contains is a list of PI + project investigatos of the project
     # The API returns a list of dict(zip("project_invs",
-    #                                    "PI(lastname, firstname) <br/>
-    #                                     investigator 1(lastname, firstname) <br/>
-    #                                     investigator 2(lastname, firstname) ..."))
+    #               "PI(lastname, firstname) <br/>
+    #                investigator 1(lastname, firstname) <br/>
+    #                investigator 2(lastname, firstname) ..."))
     users = (
         src_conn.select(
             "xnat:projectData",
@@ -39,16 +38,26 @@ def add_users_as_owners(project, project_id, src_conn, dst_conn):
             typer.echo(f"Could not find PI {user} as a user on XNAT server")
             pass
 
-def create_new_project(project_id: str, source_host: str, source_user: str, source_pass: str, dest_host: str, dest_user: str, dest_pass: str, src_conn, dst_conn):
+
+def create_new_project(
+    project_id: str,
+    source_host: str,
+    source_user: str,
+    source_pass: str,
+    dest_host: str,
+    dest_user: str,
+    dest_pass: str,
+    src_conn,
+    dst_conn,
+):
     """
     Create a project on destination server with the same settings as on the source server
 
-    This function creates a project on a destination XNAT server with the same settings as on the source server.
-    Investigators are added as users.
+    This function creates a project on a destination XNAT server with the same
+    settings as on the source server. Investigators are added as users.
     """
 
     typer.echo(f"Creating project {project_id} on destination XNAT server")
-
 
     typer.echo("Retrieved source and destination connections")
 
@@ -71,7 +80,6 @@ def create_new_project(project_id: str, source_host: str, source_user: str, sour
     )
 
     typer.echo("Found project with project details {}".format(project_values[0]))
-
 
     accessibility = (
         src_conn.select(
@@ -100,7 +108,6 @@ def create_new_project(project_id: str, source_host: str, source_user: str, sour
             typer.echo("{} project already exists on server".format(project_id))
     except IndexError:
         typer.echo("Project with {} not found".format(project_id))
-
 
     return server_project
 
@@ -159,6 +166,7 @@ def get_user_details(connection: pyxnat.Interface):
         users_details["{}, {}".format(lastname, firstname)] = user
 
     return users_details
+
 
 def set_xsync_credentials(
     xrelay_host: str,
