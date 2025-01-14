@@ -126,6 +126,7 @@ def remove_empty(values_to_select, project_values):
 
     return values_to_insert
 
+
 def fetch_all_sessions(xserver_host, xserver_user, xserver_pass, project_id):
     # GET all sessions for a project from xnat remote server
     basic = HTTPBasicAuth(xserver_user, xserver_pass)
@@ -139,6 +140,7 @@ def fetch_all_sessions(xserver_host, xserver_user, xserver_pass, project_id):
     )
     print("Response: ", response)
     return response.json()
+
 
 def fetch_all_projects(xserver_host, xserver_user, xserver_pass):
     # GET all projects from xnat remote server

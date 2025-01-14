@@ -1,18 +1,20 @@
-import requests
 import glob
 import json
 import os
 import shutil
 import sys
-from xnat_tools.dicom_export import dicom_export
-from requests.auth import HTTPBasicAuth
+
+import requests
 from dotenv import load_dotenv
+from requests.auth import HTTPBasicAuth
+from xnat_tools.dicom_export import dicom_export
 
 load_dotenv()
 
 BASE_URL = "https://qa-xnat.bnc.brown.edu"
 USERNAME = os.getenv("XNAT_SERVER_USER")
 PASSWORD = os.getenv("XNAT_SERVER_PASS")
+
 
 # Helper function for making requests
 def make_request(method, endpoint, data=None, params=None):
@@ -31,6 +33,7 @@ def make_request(method, endpoint, data=None, params=None):
     except requests.exceptions.RequestException as e:
         print(f"Request failed: {e}")
         sys.exit(1)
+
 
 # Test Suite
 def test_xnat_api():
@@ -51,10 +54,17 @@ def test_xnat_api():
     assert int(projects["ResultSet"]["totalRecords"]) != 0, "Zero projects retrieved"
     print(f"Projects retrieved: {int(projects['ResultSet']['totalRecords'])}")
 
-
     # Test getting an experiment
     print("Testing session retrieval...")
-    session_response = make_request("GET", "/data/experiments/XNAT_DEV_E00016", params={"format": "json", "handler": "values", "columns": "project,subject_ID,label"})
+    session_response = make_request(
+        "GET",
+        "/data/experiments/XNAT_DEV_E00016",
+        params={
+            "format": "json",
+            "handler": "values",
+            "columns": "project,subject_ID,label",
+        },
+    )
     assert session_response.status_code == 200, "Failed to retrieve session"
     print(session_response)
     session = session_response.json()
@@ -62,21 +72,26 @@ def test_xnat_api():
 
     # Test getting an experiment's scans
     print("Testing session scans retrieval...")
-    scans_response = make_request("GET", "/data/experiments/XNAT_DEV_E00016/scans", params={"format": "json"})
+    scans_response = make_request(
+        "GET", "/data/experiments/XNAT_DEV_E00016/scans", params={"format": "json"}
+    )
     assert scans_response.status_code == 200, "Failed to retrieve session scans"
     scans = scans_response.json()
     print(f"Scans retrieved: {scans}")
 
     # Test getting a subject
     print("Testing subject retrieval...")
-    subject_response = make_request("GET", "/data/subjects/XNAT_DEV_S00014", params={"format": "json", "handler": "values", "columns": "label"})
+    subject_response = make_request(
+        "GET",
+        "/data/subjects/XNAT_DEV_S00014",
+        params={"format": "json", "handler": "values", "columns": "label"},
+    )
     assert subject_response.status_code == 200, "Failed to retrieve subject"
     subject = subject_response.json()
     print(f"Subject retrieved: {subject}")
 
     # Test exporting DICOM data
     print("Testing DICOM export...")
-==
     bids_root_dir = "./tests/xnat2bids"
 
     if os.path.exists(bids_root_dir):
