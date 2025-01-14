@@ -41,12 +41,6 @@ def add_users_as_owners(project, project_id, src_conn, dst_conn):
 
 def create_new_project(
     project_id: str,
-    source_host: str,
-    source_user: str,
-    source_pass: str,
-    dest_host: str,
-    dest_user: str,
-    dest_pass: str,
     src_conn,
     dst_conn,
 ):
@@ -132,6 +126,19 @@ def remove_empty(values_to_select, project_values):
 
     return values_to_insert
 
+def fetch_all_sessions(xserver_host, xserver_user, xserver_pass, project_id):
+    # GET all sessions for a project from xnat remote server
+    basic = HTTPBasicAuth(xserver_user, xserver_pass)
+    get_url = xserver_host + "/data/projects/" + project_id + "/experiments"
+    print(get_url)
+    response = requests.request(
+        "GET",
+        get_url,
+        headers={"Content-Type": "application/json"},
+        auth=basic,
+    )
+    print("Response: ", response)
+    return response.json()
 
 def fetch_all_projects(xserver_host, xserver_user, xserver_pass):
     # GET all projects from xnat remote server
