@@ -29,7 +29,7 @@ xnat-replicate-projects ="xnat_admin_tools.replicate_projects:main"
 xnat-replicate-relay-projects ="xnat_admin_tools.replicate_projects_relays:main"
 xnat-export-project-data ="xnat_admin_tools.export_project_data:main"
 xnat-refresh-project-catalog ="xnat_admin_tools.refresh_project_catalog:main"
-xnat-test-api="xnat_admin_tools.test_xnat_api:main"
+xnat-quicktest-api="xnat_admin_tools.test_xnat_api:main"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

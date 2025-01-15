@@ -12,7 +12,7 @@ from xnat_tools.dicom_export import dicom_export
 
 load_dotenv()
 
-BASE_URL = "https://qa-xnat.bnc.brown.edu"
+BASE_URL = os.getenv("BASE_URL")
 USERNAME = os.getenv("XNAT_SERVER_USER")
 PASSWORD = os.getenv("XNAT_SERVER_PASS")
 

@@ -1,0 +1,42 @@
+name: XNAT Quick Test
+
+on:
+  workflow_dispatch: 
+    inputs:
+      image_tag:
+        description: "XNAT Admin Tools Container Tag"
+        required: true
+        default: "latest"
+      environment:
+        description: "Choose environment (QA or PROD)"
+        required: true
+        default: "QA"
+        type: choice
+        options:
+          - QA
+          - PROD
+
+jobs:
+  test-xnat-api:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/brown-bnc/xnat-admin-tools:${{ github.event.inputs.image_tag }}
+      env:
+        BASE_URL: "https://qa-xnat.bnc.brown.edu" 
+        XNAT_SERVER_USER: ${{ secrets.XNAT_SERVER_USER }}
+        XNAT_SERVER_PASS: ${{ secrets.XNAT_SERVER_PASS }}
+
+    steps:
+      - name: Set BASE_URL
+        run: |
+          if [ "${{ github.event.inputs.environment }}" == "PROD" ]; then
+            echo "BASE_URL=https://xnat.bnc.brown.edu" >> $GITHUB_ENV
+          fi
+
+      - name: Run XNAT Quicktest
+        env:
+          BASE_URL: ${{ env.BASE_URL }}
+          XNAT_SERVER_USER: ${{ secrets.XNAT_SERVER_USER }}
+          XNAT_SERVER_PASS: ${{ secrets.XNAT_SERVER_PASS }}
+        run: |
+          xnat-quicktest-api
