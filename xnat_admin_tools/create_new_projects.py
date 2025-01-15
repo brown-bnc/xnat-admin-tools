@@ -44,12 +44,6 @@ def create_new_projects(project_id: str):
 
     project = create_new_project(
         project_id,
-        xrelay_host,
-        xrelay_user,
-        xrelay_pass,
-        xserver_host,
-        xserver_user,
-        xserver_pass,
         source_connection,
         dest_connection,
     )
