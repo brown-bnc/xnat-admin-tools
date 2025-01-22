@@ -18,7 +18,7 @@ on:
 
 jobs:
   test-xnat-api:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     container:
       image: ghcr.io/brown-bnc/xnat-admin-tools:${{ github.event.inputs.image_tag }}
       env:
