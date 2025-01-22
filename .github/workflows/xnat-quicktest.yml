@@ -34,9 +34,5 @@ jobs:
           fi
 
       - name: Run XNAT Quicktest
-        env:
-          BASE_URL: ${{ env.BASE_URL }}
-          XNAT_SERVER_USER: ${{ secrets.XNAT_SERVER_USER }}
-          XNAT_SERVER_PASS: ${{ secrets.XNAT_SERVER_PASS }}
         run: |
           xnat-quicktest-api
