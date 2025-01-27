@@ -16,6 +16,8 @@ BASE_URL = os.getenv("BASE_URL")
 USERNAME = os.getenv("XNAT_SERVER_USER")
 PASSWORD = os.getenv("XNAT_SERVER_PASS")
 
+# Only Export Scans < 100MB 
+MAX_TEST_EXPORT_SIZE = 100000000
 
 # Helper function for making requests
 def make_request(method, endpoint, data=None, params=None):
@@ -37,16 +39,16 @@ def make_request(method, endpoint, data=None, params=None):
 
 
 def extract_valid_sequence(session_report):
-    smallest_seq = (None, float("inf"))
-    for scan in session_report["items"][0]["children"][0]["items"]:
-        file_size = scan["children"][0]["items"][0]["data_fields"]["file_size"]
-        seq_id = scan["data_fields"]["ID"]
 
-        if file_size < smallest_seq[1]:
-            smallest_seq = (seq_id, file_size)
+    while(True):
+        num_sequences = len(session_report["items"][0]["children"][0]["items"])
+        rand_scan = session_report["items"][0]["children"][0]["items"][random.randrange(num_sequences)]
+        file_size = rand_scan["children"][0]["items"][0]["data_fields"]["file_size"] 
 
-    return smallest_seq[0]
+        if file_size < MAX_TEST_EXPORT_SIZE:
+            break
 
+    return rand_scan["data_fields"]["ID"]
 
 # Test Suite
 def test_xnat_api():
