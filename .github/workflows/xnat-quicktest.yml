@@ -28,6 +28,7 @@ jobs:
 
     steps:
       - name: Set BASE_URL
+        shell: bash
         run: |
           if [ "${{ github.event.inputs.environment }}" == "PROD" ]; then
             echo "BASE_URL=https://xnat.bnc.brown.edu" >> $GITHUB_ENV
