@@ -4,13 +4,13 @@ import os
 import random
 import shutil
 import sys
+import time
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
 
 import requests
-import time
 from dotenv import load_dotenv
 from requests.auth import HTTPBasicAuth
 from xnat_tools.dicom_export import dicom_export
-from concurrent.futures import ThreadPoolExecutor, TimeoutError
 
 load_dotenv()
 
@@ -26,7 +26,7 @@ if BASE_URL == "https://qa-xnat.bnc.brown.edu":
 else:
     session_ids = ["XNAT_E00114", "XNAT_E00152"]
 
-# Helper function for making requests
+
 def make_request(method, endpoint, data=None, params=None):
     url = f"{BASE_URL}{endpoint}"
     try:
@@ -88,6 +88,7 @@ def run_export_for_session(sess_id):
         print(f"Export for session {sess_id} completed.")
     except Exception as e:
         print(f"Export for session {sess_id} failed: {e}")
+
 
 # Test Suite
 def test_xnat_api():
@@ -219,28 +220,29 @@ def test_xnat_api():
     assert len(dicom_files) > 0, "DICOM export failed: No files found"
     print(f"DICOM export successful. Files exported: {len(dicom_files)}")
 
-    # Concurrent export speed test 
+    # Concurrent export speed test
     start_time = time.time()
-    TIMEOUT = 900  
+    TIMEOUT = 900
 
     with ThreadPoolExecutor(max_workers=2) as executor:
         futures = [
             executor.submit(run_export_for_session, session_ids[0]),
             executor.submit(run_export_for_session, session_ids[1]),
         ]
-        
+
         try:
             for future in futures:
                 future.result(timeout=TIMEOUT)
         except TimeoutError:
-            raise AssertionError(f"Test failed: DICOM export took longer than {TIMEOUT} seconds.")
-    
-    # End timing
+            raise AssertionError(
+                f"Test failed: DICOM export took longer than {TIMEOUT} seconds."
+            )
+
     end_time = time.time()
     duration = end_time - start_time
 
     print(f"Concurrent exports completed in {duration:.2f} seconds.")
 
-# Run the tests
+
 def main():
     test_xnat_api()
