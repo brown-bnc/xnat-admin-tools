@@ -6,9 +6,11 @@ import shutil
 import sys
 
 import requests
+import time
 from dotenv import load_dotenv
 from requests.auth import HTTPBasicAuth
 from xnat_tools.dicom_export import dicom_export
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
 
 load_dotenv()
 
@@ -19,6 +21,10 @@ PASSWORD = os.getenv("XNAT_SERVER_PASS")
 # Only Export Scans < 100MB
 MAX_TEST_EXPORT_SIZE = 100000000
 
+if BASE_URL == "https://qa-xnat.bnc.brown.edu":
+    session_ids = ["XNAT_DEV_E00016", "XNAT_DEV_E00017"]
+else:
+    session_ids = ["XNAT_E00114", "XNAT_E00152"]
 
 # Helper function for making requests
 def make_request(method, endpoint, data=None, params=None):
@@ -53,6 +59,35 @@ def extract_valid_sequence(session_report):
 
     return rand_scan["data_fields"]["ID"]
 
+
+def run_export_for_session(sess_id):
+    print(f"Starting export for session {sess_id}...")
+    out_dir = f"./tests/xnat2bids_{sess_id}"
+
+    if os.path.exists(out_dir):
+        shutil.rmtree(out_dir, ignore_errors=True)
+    os.makedirs(out_dir, exist_ok=True)
+
+    try:
+        dicom_export(
+            session=sess_id,
+            bids_root_dir=out_dir,
+            user=USERNAME,
+            password=PASSWORD,
+            host=BASE_URL,
+            session_suffix="-1",
+            bidsmap_file="",
+            includeseq=[],
+            skipseq=[],
+            log_id=f"pytest-{sess_id}",
+            verbose=0,
+            overwrite=True,
+            validate_frames=False,
+            correct_dicoms_config="",
+        )
+        print(f"Export for session {sess_id} completed.")
+    except Exception as e:
+        print(f"Export for session {sess_id} failed: {e}")
 
 # Test Suite
 def test_xnat_api():
@@ -184,6 +219,27 @@ def test_xnat_api():
     assert len(dicom_files) > 0, "DICOM export failed: No files found"
     print(f"DICOM export successful. Files exported: {len(dicom_files)}")
 
+    # Concurrent export speed test 
+    start_time = time.time()
+    TIMEOUT = 900  
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        futures = [
+            executor.submit(run_export_for_session, session_ids[0]),
+            executor.submit(run_export_for_session, session_ids[1]),
+        ]
+        
+        try:
+            for future in futures:
+                future.result(timeout=TIMEOUT)
+        except TimeoutError:
+            raise AssertionError(f"Test failed: DICOM export took longer than {TIMEOUT} seconds.")
+    
+    # End timing
+    end_time = time.time()
+    duration = end_time - start_time
+
+    print(f"Concurrent exports completed in {duration:.2f} seconds.")
 
 # Run the tests
 def main():
