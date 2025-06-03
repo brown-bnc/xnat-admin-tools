@@ -5,7 +5,7 @@ import random
 import shutil
 import sys
 import time
-from concurrent.futures import ThreadPoolExecutor, TimeoutError
+from concurrent.futures import ThreadPoolExecutor, wait
 
 import requests
 from dotenv import load_dotenv
@@ -225,18 +225,19 @@ def test_xnat_api():
     TIMEOUT = 900
 
     with ThreadPoolExecutor(max_workers=2) as executor:
-        futures = [
-            executor.submit(run_export_for_session, session_ids[0]),
-            executor.submit(run_export_for_session, session_ids[1]),
-        ]
+        futures = [executor.submit(run_export_for_session, sid) for sid in session_ids]
 
-        try:
-            for future in futures:
-                future.result(timeout=TIMEOUT)
-        except TimeoutError:
-            raise AssertionError(
-                f"Test failed: DICOM export took longer than {TIMEOUT} seconds."
-            )
+    done, not_done = wait(futures, timeout=TIMEOUT)
+
+    if not_done:
+        raise AssertionError(
+            f"Test failed: one or more exports exceeded {TIMEOUT} seconds."
+        )
+
+    for future in done:
+        exception = future.exception()
+        if exception:
+            raise exception
 
     end_time = time.time()
     duration = end_time - start_time
