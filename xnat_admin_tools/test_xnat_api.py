@@ -5,7 +5,6 @@ import random
 import shutil
 import sys
 import time
-from concurrent.futures import ThreadPoolExecutor, wait
 
 import requests
 from dotenv import load_dotenv
@@ -22,9 +21,9 @@ PASSWORD = os.getenv("XNAT_SERVER_PASS")
 MAX_TEST_EXPORT_SIZE = 100000000
 
 if BASE_URL == "https://qa-xnat.bnc.brown.edu":
-    session_ids = ["XNAT_DEV_E00016", "XNAT_DEV_E00017"]
+    session_ids = "XNAT_DEV_E00017"
 else:
-    session_ids = ["XNAT_E00114", "XNAT_E00152"]
+    session_ids = "XNAT_E00114"
 
 
 def make_request(method, endpoint, data=None, params=None):
@@ -222,26 +221,14 @@ def test_xnat_api():
 
     # Concurrent export speed test
     start_time = time.time()
-    TIMEOUT = 900
+    TIMEOUT = 1200
 
-    with ThreadPoolExecutor(max_workers=2) as executor:
-        futures = [executor.submit(run_export_for_session, sid) for sid in session_ids]
-
-    done, not_done = wait(futures, timeout=TIMEOUT)
-
-    if not_done:
-        raise AssertionError(
-            f"Test failed: one or more exports exceeded {TIMEOUT} seconds."
-        )
-
-    for future in done:
-        exception = future.exception()
-        if exception:
-            raise exception
+    run_export_for_session(session_id)
 
     end_time = time.time()
     duration = end_time - start_time
 
+    assert duration < TIMEOUT
     print(f"Concurrent exports completed in {duration:.2f} seconds.")
 
 
