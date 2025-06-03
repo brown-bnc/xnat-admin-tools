@@ -4,6 +4,7 @@ import os
 import random
 import shutil
 import sys
+import time
 
 import requests
 from dotenv import load_dotenv
@@ -19,8 +20,12 @@ PASSWORD = os.getenv("XNAT_SERVER_PASS")
 # Only Export Scans < 100MB
 MAX_TEST_EXPORT_SIZE = 100000000
 
+if BASE_URL == "https://qa-xnat.bnc.brown.edu":
+    session_ids = "XNAT_DEV_E00017"
+else:
+    session_ids = "XNAT_E00114"
 
-# Helper function for making requests
+
 def make_request(method, endpoint, data=None, params=None):
     url = f"{BASE_URL}{endpoint}"
     try:
@@ -52,6 +57,36 @@ def extract_valid_sequence(session_report):
             break
 
     return rand_scan["data_fields"]["ID"]
+
+
+def run_export_for_session(sess_id):
+    print(f"Starting export for session {sess_id}...")
+    out_dir = f"./tests/xnat2bids_{sess_id}"
+
+    if os.path.exists(out_dir):
+        shutil.rmtree(out_dir, ignore_errors=True)
+    os.makedirs(out_dir, exist_ok=True)
+
+    try:
+        dicom_export(
+            session=sess_id,
+            bids_root_dir=out_dir,
+            user=USERNAME,
+            password=PASSWORD,
+            host=BASE_URL,
+            session_suffix="-1",
+            bidsmap_file="",
+            includeseq=[],
+            skipseq=[],
+            log_id=f"pytest-{sess_id}",
+            verbose=0,
+            overwrite=True,
+            validate_frames=False,
+            correct_dicoms_config="",
+        )
+        print(f"Export for session {sess_id} completed.")
+    except Exception as e:
+        print(f"Export for session {sess_id} failed: {e}")
 
 
 # Test Suite
@@ -184,7 +219,18 @@ def test_xnat_api():
     assert len(dicom_files) > 0, "DICOM export failed: No files found"
     print(f"DICOM export successful. Files exported: {len(dicom_files)}")
 
+    # Concurrent export speed test
+    start_time = time.time()
+    TIMEOUT = 1200
 
-# Run the tests
+    run_export_for_session(session_id)
+
+    end_time = time.time()
+    duration = end_time - start_time
+
+    assert duration < TIMEOUT
+    print(f"Concurrent exports completed in {duration:.2f} seconds.")
+
+
 def main():
     test_xnat_api()
