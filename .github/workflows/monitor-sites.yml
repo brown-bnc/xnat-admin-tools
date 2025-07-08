@@ -21,4 +21,3 @@ jobs:
           website: ${{ matrix.url }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
-          notify_slack: "true"
