@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Check ${{ matrix.url }}
-        uses: brown-ccv/gh-actions/check-website-action@main  
+        uses: brown-ccv/gh-actions/check-website-up@main  
         with:
           website: ${{ matrix.url }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
